@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import StoreSelection from './pages/StoreSelection';
 import StoreProducts from './pages/StoreProducts';
+import Cart from './pages/Cart';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/stores" element={<StoreSelection />} />
           <Route path="/store/:id" element={<StoreProducts />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/" element={<Navigate to="/stores" replace />} />
         </Routes>
       </Router>

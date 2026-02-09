@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from app.routers import health, auth, users, stores, products
+from app.routers import health, auth, users, stores, products, cart
 from app.db.database import engine, Base
+from app.models import cart as cart_model  # Import to ensure tables are created
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -28,6 +29,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(stores.router)
 app.include_router(products.router)
+app.include_router(cart.router)
 
 @app.on_event("startup")
 def startup_db_check():

@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import relationship
 from app.db.database import Base
 
 class User(Base):
@@ -9,3 +10,5 @@ class User(Base):
     hashed_password = Column(String)
     full_name = Column(String, index=True)
     is_active = Column(Boolean, default=True)
+
+    cart = relationship("Cart", back_populates="user", uselist=False)
