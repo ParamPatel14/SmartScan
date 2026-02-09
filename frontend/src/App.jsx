@@ -3,6 +3,8 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import StoreSelection from './pages/StoreSelection';
+import StoreProducts from './pages/StoreProducts';
 
 export default function App() {
   return (
@@ -12,7 +14,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/" element={<Navigate to="/profile" replace />} />
+          <Route path="/stores" element={<StoreSelection />} />
+          <Route path="/store/:id" element={<StoreProducts />} />
+          <Route path="/" element={<Navigate to="/stores" replace />} />
         </Routes>
       </Router>
     </AuthProvider>

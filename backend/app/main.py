@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from app.routers import health, auth, users
+from app.routers import health, auth, users, stores, products
 from app.db.database import engine, Base
 
 # Create database tables
@@ -26,6 +26,8 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(stores.router)
+app.include_router(products.router)
 
 @app.on_event("startup")
 def startup_db_check():
