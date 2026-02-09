@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from app.routers import health
-from app.db.database import engine
+from app.routers import health, auth, users
+from app.db.database import engine, Base
 
-app = FastAPI(title="My Backend API")
+# Create database tables
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="SmartScan API")
 
 # Configure CORS
 origins = [
@@ -21,6 +24,8 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(auth.router)
+app.include_router(users.router)
 
 @app.on_event("startup")
 def startup_db_check():
