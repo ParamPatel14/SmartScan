@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { addToCart } from '../services/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -8,13 +9,28 @@ export default function Login() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
       await login(email, password);
-      navigate('/profile');
+      
+      // Check if there was a pending action (like adding to cart)
+      if (location.state?.productToAdd) {
+        try {
+          await addToCart(location.state.productToAdd.id, 1);
+          alert(`Successfully added ${location.state.productToAdd.name} to your cart!`);
+        } catch (cartError) {
+          console.error("Failed to add pending item to cart", cartError);
+          alert("Logged in successfully, but failed to add the item to cart. Please try again.");
+        }
+      }
+
+      // Redirect back to where the user came from, or profile by default
+      const from = location.state?.from?.pathname || '/profile';
+      navigate(from, { replace: true });
     } catch (err) {
       setError('Invalid email or password');
     }

@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getStore, getProducts, searchProducts, getProductByBarcode, addToCart } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function StoreProducts() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, token } = useAuth();
   const [store, setStore] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +72,13 @@ export default function StoreProducts() {
   };
 
   const handleAddToCart = async (product) => {
+    if (!token) {
+      if (window.confirm("You need to log in to add items to your cart. Go to login page?")) {
+        navigate('/login', { state: { from: location, productToAdd: product } });
+      }
+      return;
+    }
+
     setAddingToCart(product.id);
     try {
       await addToCart(product.id, 1);
@@ -76,7 +86,12 @@ export default function StoreProducts() {
       alert(`Added ${product.name} to cart!`);
     } catch (error) {
       console.error("Failed to add to cart", error);
-      alert("Failed to add item to cart.");
+      if (error.response && error.response.status === 401) {
+        alert("Your session has expired. Please log in again.");
+        navigate('/login', { state: { from: location, productToAdd: product } });
+      } else {
+        alert("Failed to add item to cart.");
+      }
     } finally {
       setAddingToCart(null);
     }
