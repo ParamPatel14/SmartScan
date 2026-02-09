@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getStore, getProducts, searchProducts, getProductByBarcode } from '../services/api';
+import { getStore, getProducts, searchProducts, getProductByBarcode, addToCart } from '../services/api';
 
 export default function StoreProducts() {
   const { id } = useParams();
@@ -11,6 +11,7 @@ export default function StoreProducts() {
   const [searchQuery, setSearchQuery] = useState('');
   const [barcodeQuery, setBarcodeQuery] = useState('');
   const [error, setError] = useState(null);
+  const [addingToCart, setAddingToCart] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,13 +52,11 @@ export default function StoreProducts() {
     if (!barcodeQuery.trim()) return;
     try {
       const product = await getProductByBarcode(barcodeQuery);
-      // Highlight or filter just this product
       setProducts([product]);
       setError(null);
     } catch (error) {
       setError("Product not found with this barcode");
       setProducts([]); 
-      // Optionally reload all products after a delay or let user clear
     }
   };
 
@@ -67,6 +66,20 @@ export default function StoreProducts() {
     setError(null);
     const allProducts = await getProducts(id);
     setProducts(allProducts);
+  };
+
+  const handleAddToCart = async (product) => {
+    setAddingToCart(product.id);
+    try {
+      await addToCart(product.id, 1);
+      // Optional: Show toast or feedback
+      alert(`Added ${product.name} to cart!`);
+    } catch (error) {
+      console.error("Failed to add to cart", error);
+      alert("Failed to add item to cart.");
+    } finally {
+      setAddingToCart(null);
+    }
   };
 
   if (loading) return (
@@ -95,12 +108,18 @@ export default function StoreProducts() {
               </div>
             </div>
             
-            {/* Cart Icon (Placeholder) */}
-            <div className="relative p-2">
+            {/* Cart Icon */}
+            <div 
+              className="relative p-2 cursor-pointer hover:bg-gray-100 rounded-full"
+              onClick={() => navigate('/cart')}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7 text-gray-700">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
               </svg>
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">0</span>
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">
+                {/* Optional: Add cart count here later */}
+                Go
+              </span>
             </div>
           </div>
 
@@ -170,7 +189,15 @@ export default function StoreProducts() {
                   </div>
                   <div className="mt-2 flex items-center justify-between">
                     <p className="text-lg font-bold text-indigo-600">${product.price.toFixed(2)}</p>
-                    <button className="p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors">
+                    <button 
+                      onClick={() => handleAddToCart(product)}
+                      disabled={addingToCart === product.id}
+                      className={`p-2 rounded-full transition-colors ${
+                        addingToCart === product.id 
+                          ? 'bg-gray-100 text-gray-400 cursor-wait' 
+                          : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                      }`}
+                    >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                       </svg>
